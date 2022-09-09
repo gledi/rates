@@ -1,0 +1,29 @@
+version: '3.9'
+
+volumes:
+  ratesdb-data-test:
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./containers/Dockerfile.testing
+    image: ${RATES_IMAGE_REPOSITORY:-gledi/rates}:${RATES_IMAGE_TEST_TAG:-testing}
+    container_name: rates-api-testing
+    env_file:
+      - .env.testing
+    volumes:
+      - ./rates/:/app/rates/
+      - ./tests/:/app/tests/
+      - ./containers/scripts/:/app/scripts/
+    depends_on:
+      - db
+    command: ["/bin/bash", "/app/scripts/start-app-test.sh"]
+
+  db:
+    image: postgres:14-alpine
+    container_name: rates-db-testing
+    env_file:
+      - .env.testing
+    volumes:
+      - ratesdb-data-test:/var/lib/postgresql/data

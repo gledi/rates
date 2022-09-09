@@ -15,7 +15,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env.development.local
+      - .env.development
     volumes:
       - ./rates/:/app/rates/
       - ./containers/scripts/:/app/scripts/
@@ -29,7 +29,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.development.local
+      - .env.development
     volumes:
       - ratesdb-data:/var/lib/postgresql/data
       - ./containers/initdb.d:/docker-entrypoint-initdb.d

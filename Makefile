@@ -1,4 +1,4 @@
-.PHONY: img build up down ps start stop logs shell
+.PHONY: img build up down ps start stop logs shell test-build test
 
 RATES_IMAGE_REPOSITORY=gledi/rates
 export RATES_IMAGE_REPOSITORY
@@ -39,3 +39,9 @@ logs:
 
 shell:
 	docker compose exec $(SVC) $(IMG_SHELL)
+
+test-build:
+	docker compose --file docker-compose.testing.yml build
+
+test: test-build
+	docker compose --file docker-compose.testing.yml up -d

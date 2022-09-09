@@ -1,10 +1,17 @@
+import logging
+
 from datetime import date
-from fastapi import FastAPI, Depends, Query
+from pydantic import ValidationError
+from fastapi import FastAPI, Depends, Query, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError, HTTPException
 
 from rates.database import db
 from rates.schemas import RatesQueryParams, DayAveragePrice
 from rates import queries
 
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Xeneta Rates Task")
 
@@ -22,12 +29,15 @@ async def on_shutdown() -> None:
 
 
 async def rates_params(
-        origin: str = Query(default=...),
-        destination: str = Query(default=...),
-        date_from: date = Query(default=...),
-        date_to: date = Query(default=...)) -> RatesQueryParams:
-    return RatesQueryParams(origin=origin, destination=destination, date_from=date_from, date_to=date_to)
-
+        origin: str = Query(...),
+        destination: str = Query(...),
+        date_from: date = Query(...),
+        date_to: date = Query(...)) -> RatesQueryParams:
+    try:
+        return RatesQueryParams(origin=origin, destination=destination, date_from=date_from, date_to=date_to)
+    except ValidationError as exc:
+        logger.error("Invalid parameters", exc_info=exc)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(exc.errors()))
 
 
 @app.get("/")
