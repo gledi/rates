@@ -8,16 +8,17 @@ services:
     build:
       context: .
       dockerfile: ./containers/Dockerfile
-    image: ${RATES_IMAGE_REPOSITORY:-gledi/rates}:${RATES_IMAGE_TAG:-develop}
+    image: ${REPOSITORY:-gledi/rates}:${TAG:-develop}
     container_name: rates-api
-    expose:
-      - 8000
+    restart: unless-stopped
     ports:
       - "8000:8000"
     env_file:
       - .env.development
     volumes:
       - ./rates/:/app/rates/
+      - ./migrations/:/app/migrations/
+      - ./alembic.ini:/app/alembic.ini
       - ./containers/scripts/:/app/scripts/
     depends_on:
       - db
@@ -26,6 +27,7 @@ services:
   db:
     image: postgres:14-alpine
     container_name: rates-db
+    restart: unless-stopped
     ports:
       - "5432:5432"
     env_file:

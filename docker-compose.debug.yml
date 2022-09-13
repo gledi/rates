@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  api:
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+    command: ["/bin/bash", "/app/scripts/start-app-debug.sh"]

@@ -1,14 +1,16 @@
 version: '3.9'
 
 volumes:
-  ratesdb-data-test:
+  ratesdb-testing-data:
 
 services:
-  api:
+  testapi:
     build:
       context: .
-      dockerfile: ./containers/Dockerfile.testing
-    image: ${RATES_IMAGE_REPOSITORY:-gledi/rates}:${RATES_IMAGE_TEST_TAG:-testing}
+      dockerfile: ./containers/Dockerfile
+      args:
+        - ENVIRONMENT=test
+    image: ${REPOSITORY:-gledi/rates}:${TEST_TAG:-testing}
     container_name: rates-api-testing
     env_file:
       - .env.testing
@@ -16,6 +18,7 @@ services:
       - ./rates/:/app/rates/
       - ./tests/:/app/tests/
       - ./containers/scripts/:/app/scripts/
+      - ./pyproject.toml:/app/pyproject.toml
     depends_on:
       - db
     command: ["/bin/bash", "/app/scripts/start-app-test.sh"]
@@ -23,7 +26,9 @@ services:
   db:
     image: postgres:14-alpine
     container_name: rates-db-testing
+    restart: unless-stopped
     env_file:
       - .env.testing
     volumes:
-      - ratesdb-data-test:/var/lib/postgresql/data
+      - ratesdb-testing-data:/var/lib/postgresql/data
+      - ./containers/initdb_testing.d:/docker-entrypoint-initdb.d

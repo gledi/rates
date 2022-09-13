@@ -2,11 +2,13 @@ FROM python:3.10-bullseye AS builder
 
 COPY ./requirements/ /requirements/
 
+ARG ENVIRONMENT=dev
+
 RUN apt-get update \
     && apt-get --yes upgrade \
     && apt-get --yes install --no-install-recommends libpq-dev \
     && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && python -m pip wheel --requirement /requirements/dev.txt --wheel-dir /wheels
+    && python -m pip wheel --requirement /requirements/${ENVIRONMENT}.txt --wheel-dir /wheels
 
 
 FROM python:3.10-slim-bullseye AS final
