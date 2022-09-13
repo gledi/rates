@@ -1,4 +1,4 @@
-.PHONY: image prod-image build up down ps start stop logs shell test check
+.PHONY: check outdated dump image prod-image build up down ps start stop logs shell test
 
 test = 0 # set test = 1 to run the tests in containers
 cache = 1 # set cache = 0 to disable the docker build cache
@@ -20,7 +20,7 @@ ifeq ($(cache), 0)
 endif
 
 
-tmp:
+check:
 	@echo "REPOSITORY =" $(REPOSITORY)
 	@echo "TAG =" $(TAG)
 	@echo "SVC =" $(SVC)
@@ -28,6 +28,16 @@ tmp:
 	@echo "BUILD_ARGS =" $(BUILD_ARGS)
 	@echo "COMPOSE_FILE =" $(COMPOSE_FILE)
 	@echo "NO_CACHE =" $(NO_CACHE)
+
+outdated:
+	@poetry show --outdated
+
+dump:
+	@poetry export --without-hashes --without-urls -o requirements/base.txt
+	@poetry export --without-hashes --without-urls --with=test -o requirements/test.txt
+	@poetry export --without-hashes --without-urls --with=migrations -o requirements/migrations.txt
+	@poetry export --without-hashes --without-urls --with=prod --with=migrations --with=test --with=dev -o requirements/dev.txt
+	@poetry export --without-hashes --without-urls --with=prod -o requirements/prod.txt
 
 image:
 	docker build --tag $(REPOSITORY):$(TAG) --file ./containers/Dockerfile $(BUILD_ARGS) $(NO_CACHE) .
